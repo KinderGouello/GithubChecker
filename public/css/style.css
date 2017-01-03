@@ -1,0 +1,36 @@
+.item.success {
+    background-color: #c9f1c4;
+    animation: success 500ms;
+}
+
+i.icon.check.circle:before {
+    color: #81c287;
+}
+
+.item.fail {
+    animation: fail 500ms;
+    background-color: #efabab;
+}
+
+i.icon.remove.circle:before {
+    color: #c28181;
+}
+
+
+@keyframes success {
+    from {
+        background-color: transparent;
+    }
+    to {
+        background-color: #c9f1c4;
+    }
+}
+
+@keyframes fail {
+    from {
+        background-color: transparent;
+    }
+    to {
+        background-color: #efabab;
+    }
+}
