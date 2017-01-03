@@ -1,0 +1,57 @@
+<% include ../layout/header %>
+
+<h1>Liste des repositories</h1>
+<div class="ui relaxed divided list">
+    <% repos.forEach(function(repo) { %>
+        <div class="item" data-repository="<%= repo.name %>">
+          <i class="large github middle aligned icon"></i>
+          <div class="content">
+            <a href="<%= repo.href %>" class="header" target="_blank" style="display: inline-block" ><%= repo.description %></a> <i class="loader wait icon"></i>
+            <div class="description">Wait...</div>
+          </div>
+        </div>
+    <% }); %>
+</div>
+
+<% include ../layout/footer %>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $.each($('.item'), function(index, repository) {
+        // var repository = $('.item').first();
+
+        $.get('/status/' + $(repository).data('repository'))
+            .done(function(data) {
+                if (data.status) {
+                    $(repository)
+                        .addClass('success')
+                        .find('.loader')
+                        .removeClass('wait')
+                        .addClass('check circle');
+                    $(repository)
+                        .find('.description')
+                        .html('Still maintained');
+                } else {
+                    $(repository)
+                        .addClass('fail')
+                        .find('.loader')
+                        .removeClass('wait')
+                        .addClass('remove circle');
+                    $(repository)
+                        .find('.description')
+                        .html('May be deprecated');
+                }
+            })
+            .fail(function(data) {
+                $(repository)
+                    .addClass('fail')
+                    .find('.loader')
+                    .removeClass('wait')
+                    .addClass('circle');
+                $(repository)
+                    .find('.description')
+                    .html('An error has occurred');
+            });
+    });
+});
+</script>

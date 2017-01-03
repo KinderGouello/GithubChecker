@@ -1,0 +1,11 @@
+app:
+    build: docker
+    container_name: githubchecker_node
+    mem_limit: 300m
+    memswap_limit: 1g
+    ports:
+        - '3000:3000'
+    volumes:
+        - .:/home/nodejs/app
+        # - /home/nodejs/app/node_modules
+    tty: true
