@@ -2,19 +2,18 @@ require('dotenv').config()
 const express = require('express')
 const app = express()
 const request = require('request')
-const fs = require('fs')
-const async = require('async')
 const moment = require('moment')
 const extend = require('lodash/extend')
 const queryString = require('query-string')
+const cache = require('./cache.js')
 
 app.set('view engine', 'ejs')
 
 // Middleware
 app.use('/assets', express.static('public'))
-app.use('/favicon.ico', express.static('public/images/favicon.ico'));
+app.use('/favicon.ico', express.static('public/images/favicon.ico'))
 
-const sinceLastOneMonth = moment().subtract(1, 'months')
+const sinceLastOneMonth = moment().subtract(12, 'months')
 
 function getGithubRequestOptions(url, options) {
     const defaultOptions = {
@@ -33,15 +32,30 @@ function getGithubRequestOptions(url, options) {
 
 app.get('/status/:owner/:repository', (req, res, next) => {
     const repository = `${req.params.owner}/${req.params.repository}`
+    const cacheNameRepository = repository.replace('/', '_')
+
     let json = {
         repository: req.params.owner + '/' + req.params.repository,
         status: true
     }
 
+    cache.get(`${cacheNameRepository}`, (err, data) => {
+        if (undefined !== data && sinceLastOneMonth < data.last_commit_date) {
+            res.send(json)
+            return
+        }
+    })
+
     request(
         getGithubRequestOptions(`repos/${repository}/commits`, { since: sinceLastOneMonth })
     , (error, apiResponse, commits) => {
         if (commits.length > 0) {
+            cache.set(`${cacheNameRepository}`,
+                {
+                    last_commit_date: commits[0].commit.committer.date,
+                    status : json.status
+                }
+            )
             res.send(json)
             return
         }
